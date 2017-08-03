@@ -27,7 +27,38 @@ pub fn run(config: Config) -> Result<(), Box<Error>> {
     let mut content = String::new();
     f.read_to_string(&mut content)?;
 
-    println!("With text:\n{}", content);
+    for line in search(&config.query, &content) {
+        println!("{}", line);
+    }
+//    println!("With text:\n{}", content);
 
     Ok(())
+}
+
+fn search<'a>(query: &str, content: &'a str) -> Vec<&'a str> {
+    let mut ans = Vec::new();
+
+    for line in content.lines() {
+        if line.contains(query) {
+            ans.push(line);
+        }
+    }
+
+    ans
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn one_result() {
+        let query = "duct";
+        let content = "Rust:\nsafe, fast, productive.\nPick three.";
+
+        assert_eq!(
+            vec!["safe, fast, productive."],
+            search(query, content)
+        );
+    }
 }
