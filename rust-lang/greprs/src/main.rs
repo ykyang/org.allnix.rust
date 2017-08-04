@@ -7,11 +7,10 @@ use std::io::prelude::Write;
 use greprs::Config;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
     // > stderr
     let mut cerr = std::io::stderr();
 
-    let config = Config::new(&args).unwrap_or_else(|err| {
+    let config = Config::new(env::args()).unwrap_or_else(|err| {
         writeln!(
             &mut cerr,
             "Problem parsing arguments: {}", err
