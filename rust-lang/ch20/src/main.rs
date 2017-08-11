@@ -2,18 +2,22 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 
 // See https://doc.rust-lang.org/std/io/prelude/
-//use std::io::prelude::*;
+// the prelude imports all the common Read, Write ...
+use std::io::prelude::*;
+//use std::io::Read;
 
-use std::io::Read;
+use std::fs::File;
 
 fn main() {
     let address = "127.0.0.1:8080";
 
     let listener = TcpListener::bind(address).unwrap();
 
-    for streamResult in listener.incoming() { // Result<TcpStream>
+    for streamResult in listener.incoming() {
+        // Result<TcpStream>
         match streamResult {
-            Ok(stream) => { // stream: TcpStream
+            Ok(stream) => {
+                // stream: TcpStream
                 println!("New client");
                 handle_connection(stream);
             }
@@ -29,11 +33,49 @@ fn handle_connection(mut stream: TcpStream) {
     // fn read(&mut self, buf: &mut [u8]) -> Result<usize>
     match stream.read(&mut buffer) {
         Ok(length) => {
-            let response = 
+            println!("---------------------------------");
             println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
-        }
-        Err(err) => {
+            println!("---------------------------------");
+			
+            let get = b"GET / HTTP/1.1\r\n";
+			
+			let (status, filename) = if buffer.starts_with(get) {
+				("HTTP/1.1 200 OK\r\n\r\n", "hello.html")
+			} else {
+				("HTTP/1.1 404 NOT FOUND\r\n\r\n", "404.html")
+			};
+
+			let mut file = File::open(filename).unwrap();
+            let mut content = String::new();
+            let length = file.read_to_string(&mut content).unwrap();
+            println!("HTML length: {}", length);
+            let response = format!("{}{}", status, content);
+            let length = stream.write(response.as_bytes()).unwrap();
+            println!("bytes sent: {}", length);
+            stream.flush().unwrap();
+
+//            if buffer.starts_with(get) {
+//                let mut file = File::open("hello.html").unwrap();
+//                let mut content = String::new();
+//                let length = file.read_to_string(&mut content).unwrap();
+//                println!("HTML length: {}", length);
+//
+//                let response = format!("HTTP/1.1 200 OK\r\n\r\n{}", content);
+//                let length = stream.write(response.as_bytes()).unwrap();
+//                println!("bytes sent: {}", length);
+//                stream.flush().unwrap();
+//            } else {
+//				let header = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
+//				let mut file = File::open("404.html").unwrap();
+//				let mut content = String::new();
+//				file.read_to_string(&mut content).unwrap();
+//				
+//				let response = format!("{}{}", header, content);
+//				stream.write(response.as_bytes()).unwrap();
+//				stream.flush().unwrap();
+//            }
 
         }
+        Err(err) => {}
     }
 }
