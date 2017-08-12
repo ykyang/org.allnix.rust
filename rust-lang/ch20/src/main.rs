@@ -1,3 +1,6 @@
+extern crate ch20;
+use ch20::ThreadPool;
+
 use std::net::TcpListener;
 use std::net::TcpStream;
 
@@ -13,14 +16,15 @@ fn main() {
     let address = "127.0.0.1:8080";
 
     let listener = TcpListener::bind(address).unwrap();
-
+	let pool = ThreadPool::new(4);
+	
     for streamResult in listener.incoming() {
         // Result<TcpStream>
         match streamResult {
             Ok(stream) => {
                 // stream: TcpStream
 //                println!("New client");
-				thread::spawn(||{
+				pool.execute(||{
 				    handle_connection(stream);
 				});
                 
