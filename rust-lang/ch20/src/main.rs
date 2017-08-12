@@ -7,6 +7,7 @@ use std::io::prelude::*;
 //use std::io::Read;
 
 use std::fs::File;
+use std::thread;
 
 fn main() {
     let address = "127.0.0.1:8080";
@@ -18,8 +19,11 @@ fn main() {
         match streamResult {
             Ok(stream) => {
                 // stream: TcpStream
-                println!("New client");
-                handle_connection(stream);
+//                println!("New client");
+				thread::spawn(||{
+				    handle_connection(stream);
+				});
+                
             }
             Err(err) => {
                 println!("Connection failed");
