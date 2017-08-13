@@ -23,3 +23,15 @@ Create a library
 ```
 cargo new <project name>
 ```
+### Test ###
+Run test by
+
+```
+cargo test
+```
+Cargo suppress the standard output by default.  Enable standard output by
+
+```
+cargo test -- --nocapture
+```
+  
